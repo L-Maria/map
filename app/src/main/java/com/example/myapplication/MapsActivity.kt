@@ -1,8 +1,10 @@
 package com.example.myapplication
 
+import android.Manifest
 import android.content.pm.PackageManager
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 
@@ -20,13 +22,36 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     private val LOCATION_PERMISSION_REQUEST=1
 
     private fun getLocationAccess(){
-        if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION)== PackageManager.PERMISSION_GRANTED){
-//            map.isMyLocationEnabled=true
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)== PackageManager.PERMISSION_GRANTED){
+            mMap.isMyLocationEnabled=true
 
         }
-//        else
-//            ActivityCompat.requestPermissions(this, arrayOf ())
+        else
+            ActivityCompat.requestPermissions(this, arrayOf (Manifest.permission.ACCESS_FINE_LOCATION), LOCATION_PERMISSION_REQUEST)
      }
+
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+        if (requestCode==LOCATION_PERMISSION_REQUEST){
+            if(grantResults.contains(PackageManager.PERMISSION_GRANTED)){
+                if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                    // TODO: Consider calling
+                    //    ActivityCompat#requestPermissions
+                    // here to request the missing permissions, and then overriding
+                    //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                    //                                          int[] grantResults)
+                    // to handle the case where the user grants the permission. See the documentation
+                    // for ActivityCompat#requestPermissions for more details.
+                    return
+                }
+                mMap.isMyLocationEnabled =true
+            }
+            else {
+                Toast.makeText(this, "User has not granted location access permission", Toast.LENGTH_LONG).show()
+                finish()
+            }
+        }
+    }
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -48,7 +73,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
      */
     override fun onMapReady(googleMap: GoogleMap) {
        mMap = googleMap
-
+        getLocationAccess()
 
         val bucharest = LatLng(44.439, 26.096)
         mMap.addMarker(MarkerOptions().position(bucharest).title("Marker in Bucharest"))
